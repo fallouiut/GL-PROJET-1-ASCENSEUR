@@ -10,24 +10,27 @@ public class Main {
     private static final int STEPS = 5;
 
     public static void main(String args[]) {
-        try {/*
-            CallsButtonView operativeView = new CallsButtonView(STEPS);
-            ElevatorSliderView elevatorSlider = new ElevatorSliderView(STEPS);
-            CommandButtonView commandButtonView = new CommandButtonView(STEPS);
-            SystemsActionView systemsActionView = new SystemsActionView();
+        try {
+            //CallsButtonView operativeView = new CallsButtonView(STEPS);
+            //CommandButtonView commandButtonView = new CommandButtonView(STEPS);
+            //SystemsActionView systemsActionView = new SystemsActionView();
 
-            operativeView.show();
-            elevatorSlider.show();
-            commandButtonView.show();
-            systemsActionView.show();*/
+            //operativeView.show();
+            //commandButtonView.show();
+            //systemsActionView.show();
 
             ElevatorSystem elevatorSystem = new ElevatorSystem();
 
-            elevatorSystem.frequencyMILLIS = 1000;
-            elevatorSystem.setCurrentStage(6);
-            elevatorSystem.setStageToReach(3);
-            elevatorSystem.getDOWN();
+            ElevatorSliderView elevatorSlider = new ElevatorSliderView(STEPS, elevatorSystem);
 
+            /** ------------- CONFIG SYSTEM --------------- */
+            elevatorSystem.frequencyMILLIS = 1000;
+            elevatorSystem.setCurrentStage(0);
+            elevatorSystem.setStageToReach(3);
+            elevatorSystem.getUP();
+
+            /** -------- SHOW VIEWS AFTER STARTING SYSTEM --------------*/
+            elevatorSlider.show();
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
