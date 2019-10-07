@@ -24,8 +24,9 @@ public class Main {
             ElevatorSystem elevatorSystem = new ElevatorSystem();
 
             elevatorSystem.frequencyMILLIS = 1000;
+            elevatorSystem.setCurrentStage(6);
             elevatorSystem.setStageToReach(3);
-            elevatorSystem.getUP();
+            elevatorSystem.getDOWN();
 
 
         } catch (Exception e) {

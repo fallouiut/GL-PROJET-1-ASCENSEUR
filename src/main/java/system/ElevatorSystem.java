@@ -31,8 +31,7 @@ public class ElevatorSystem extends Observable {
         elevator.start();
     }
 
-
-    /** ----- MONTER L'ASCENSEUR ----- */
+    /** ----- DESCENDRE L'ASCENSEUR ----- */
     public void getDOWN() {
         System.out.println("Descendre à l'étage : " + this.stageToReach);
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_DOWN);
@@ -43,7 +42,7 @@ public class ElevatorSystem extends Observable {
     public void stageOverPassedUp() {
         this.currentStage += 1;
         System.out.println("Etage : " + this.currentStage);
-        if(this.currentStage == this.stageToReach -1) {
+        if(this.currentStage == this.stageToReach - 1) {
             synchronized (this.elevator) {
                 elevator.stopToNext();
             }
@@ -59,7 +58,7 @@ public class ElevatorSystem extends Observable {
     public void stageOverPassedDown() {
         this.currentStage -= 1;
         System.out.println("Etage : " + this.currentStage);
-        if(this.currentStage == this.stageToReach -1) {
+        if(this.currentStage == this.stageToReach + 1) {
             synchronized (this.elevator) {
                 elevator.stopToNext();
                 notifyObservers();
@@ -73,5 +72,9 @@ public class ElevatorSystem extends Observable {
     public void setStageToReach(int stageToReach) {
         System.out.println("Etage demandé: " + this.stageToReach);
         this.stageToReach = stageToReach;
+    }
+
+    public void setCurrentStage(int currentStage) {
+        this.currentStage = currentStage;
     }
 }
