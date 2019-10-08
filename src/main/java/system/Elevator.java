@@ -51,7 +51,11 @@ public class Elevator extends Thread {
                     this.system.stageOverPassedUp();
                 }
                 // pour le dernier etage
+                if (!doors.getState())
+                	doors.open();
                 TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
+                if (doors.getState())
+                	doors.close();
                 this.system.stageOverPassedUp();
             }
         } catch (Exception e) {
@@ -69,8 +73,13 @@ public class Elevator extends Thread {
                     this.system.stageOverPassedDown();
                 }
                 // pour le dernier etage
+
                 TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
                 this.system.stageOverPassedDown();
+                if (!doors.getState())
+                	doors.open();
+                if (doors.getState())
+                	doors.close();
             }
         } catch (Exception e) {
             System.out.println("Elevator: tractDown() crash");
