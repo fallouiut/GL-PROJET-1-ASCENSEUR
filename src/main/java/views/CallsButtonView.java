@@ -23,7 +23,7 @@ public class CallsButtonView extends JFrame {
 
     public  static void main(String[] args) {
         CallsButtonView view = new CallsButtonView(5);
-        view.show();
+        view.setVisible(true);
     }
 
     public void initCallButtons(int steps) {

@@ -32,6 +32,6 @@ public class CommandButtonView extends JFrame {
 
     public static void main(String[] args) {
         CommandButtonView view = new CommandButtonView(5);
-        view.show();
+        view.setVisible(true);
     }
 }

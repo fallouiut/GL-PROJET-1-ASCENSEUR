@@ -65,6 +65,6 @@ public class SystemsActionView extends JFrame {
 
     public static void main(String[] args) {
         SystemsActionView systemActionView = new SystemsActionView();
-        systemActionView.show();
+        systemActionView.setVisible(true);
     }
 }

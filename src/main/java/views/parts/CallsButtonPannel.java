@@ -54,7 +54,7 @@ public class CallsButtonPannel extends JPanel {
 
         frame.getContentPane().setLayout(new FlowLayout());
         frame.setSize(300, 300);
-        frame.show();
+        frame.setVisible(true);
 
     }
 }
