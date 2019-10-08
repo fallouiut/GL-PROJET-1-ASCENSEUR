@@ -28,13 +28,13 @@ public class CallsButtonPannel extends JPanel {
 
         this.up.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println(step + " - demande la montée");
+                System.out.println(step + " wants to go up");
             }
         });
 
         this.down.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println(step + " - demande a descendre");
+                System.out.println(step + " wants to do down");
             }
         });
     }
