@@ -29,13 +29,13 @@ public class ElevatorSliderView extends JFrame implements Observer {
         this.slider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                System.out.println("Etage : " + slider.getValue());
+                System.out.println("Floor : " + slider.getValue());
             }
         });
 
         this.setSize(new Dimension(200, 300));
         this.setLocation(new Point(300, 200));
-        this.setTitle("Simulateur ascenseur");
+        this.setTitle("Elevator Simulator");
 
     }
 

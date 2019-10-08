@@ -1,13 +1,10 @@
 package system;
-import views.CallsButtonView;
-import views.CommandButtonView;
-import views.ElevatorSliderView;
-import views.SystemsActionView;
 
-import java.sql.DriverManager;
 import java.util.Collection;
 import java.util.Observable;
-import java.util.Observer;
+
+
+import system.Elevator;
 
 public class ElevatorSystem extends Observable {
     // temps par etage
@@ -26,16 +23,16 @@ public class ElevatorSystem extends Observable {
     private Elevator elevator;
 
     public ElevatorSystem() {
-        System.out.println("Initialisation du système");
+        System.out.println("Initializing system.");
         this.currentStage = 0;
     }
 
     /** ----- MONTER L'ASCENSEUR ----- */
     public void getUP() {
         if(this.currentStage >= this.stageToReach) {
-            throw new IllegalArgumentException("current stage > stage to reach and wanna go up ?");
+            throw new IllegalArgumentException("Can't go up if the floor to reach is lower than the current floor.");
         }
-        System.out.println("Monter à l'étage : " + this.stageToReach);
+        System.out.println("Going up to floor : " + this.stageToReach);
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_UP);
         elevator.start();
     }
@@ -43,9 +40,9 @@ public class ElevatorSystem extends Observable {
     /** ----- DESCENDRE L'ASCENSEUR ----- */
     public void getDOWN() {
         if(this.currentStage <= this.stageToReach) {
-            throw new IllegalArgumentException("current stage < stage to reach and wanna go down ?");
+            throw new IllegalArgumentException("Can't go down if the floor to reach is lower than the current floor.");
         }
-        System.out.println("Descendre à l'étage : " + this.stageToReach);
+        System.out.println("Going down to floor : " + this.stageToReach);
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_DOWN);
         elevator.start();
     }
@@ -53,7 +50,7 @@ public class ElevatorSystem extends Observable {
     /** ----- ON A PASSE UN ETAGE EN MONTANT-----*/
     public void stageOverPassedUp() {
         this.currentStage += 1;
-        System.out.println("Etage : " + this.currentStage);
+        System.out.println("Floor : " + this.currentStage);
         if(this.currentStage == this.stageToReach - 1) {
             synchronized (this.elevator) {
                 elevator.stopToNext();
@@ -61,7 +58,7 @@ public class ElevatorSystem extends Observable {
             setChanged();
             notifyObservers();
         } else if(this.currentStage == this.stageToReach) {
-            System.out.println("Etage : " + this.currentStage + " atteint");
+            System.out.println("Floor : " + this.currentStage + " reached");
             setChanged();
             notifyObservers();
         }
@@ -77,13 +74,13 @@ public class ElevatorSystem extends Observable {
                 notifyObservers("DOWN");
             }
         } else if(this.currentStage == this.stageToReach) {
-            System.out.println("Etage : " + this.currentStage + " atteint");
+            System.out.println("Floor : " + this.currentStage + " reached");
             notifyObservers("DOWN");
         }
     }
 
     public void setStageToReach(int stageToReach) {
-        System.out.println("Etage demandé: " + this.stageToReach);
+        System.out.println("Floor to reach : " + this.stageToReach);
         this.stageToReach = stageToReach;
     }
 

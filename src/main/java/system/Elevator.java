@@ -4,10 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Elevator extends Thread {
 
-    enum Direction { TRACT_UP, TRACT_DOWN }
+    public enum Direction { TRACT_UP, TRACT_DOWN }
 
     private boolean stopToNext = false;
-
+    
+    private Door doors;
+    
     private Direction requestedDirection;
 
     private ElevatorSystem system;
@@ -15,10 +17,13 @@ public class Elevator extends Thread {
     public Elevator(ElevatorSystem system, Direction direction) {
         this.system = system;
         this.requestedDirection = direction;
+        doors = new Door();
     }
 
     public void run() {
         try {
+        	if (doors.getState())
+        		doors.close();
             switch (this.requestedDirection) {
                 case TRACT_UP:
                     this.tractUp();
@@ -50,7 +55,7 @@ public class Elevator extends Thread {
                 this.system.stageOverPassedUp();
             }
         } catch (Exception e) {
-            System.out.println("Ascenseur: tractUp() crash");
+            System.out.println("Elevator: tractUp() crash");
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
@@ -68,7 +73,7 @@ public class Elevator extends Thread {
                 this.system.stageOverPassedDown();
             }
         } catch (Exception e) {
-            System.out.println("Ascenseur: tractDown() crash");
+            System.out.println("Elevator: tractDown() crash");
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
@@ -76,7 +81,6 @@ public class Elevator extends Thread {
 
     public void stopToNext(){
         this.stopToNext = true;
-        System.out.println("Arret prochain etage");
+        System.out.println("Stopping at next floor.");
     }
-
 }

@@ -18,7 +18,7 @@ public class CallsButtonView extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocation(new Point(100, 200));
         this.setSize(new Dimension(200, 300));
-        this.setTitle("Boutons d'appel montée/descente pour chaque étage");
+        this.setTitle("Buttons for each floor");
     }
 
     public  static void main(String[] args) {

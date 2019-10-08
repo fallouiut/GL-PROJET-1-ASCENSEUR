@@ -19,7 +19,7 @@ public class CommandButtonView extends JFrame {
             this.commandButtons[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("Utilisateur cabine demande l'étage " + ((JButton)e.getSource()).getText() );
+                    System.out.println("User inside elevator demands floor " + ((JButton)e.getSource()).getText() );
                 }
             });
         }
@@ -27,7 +27,7 @@ public class CommandButtonView extends JFrame {
         this.setLocation(new Point(500, 200));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.getContentPane().setLayout(new GridLayout(3, 3));
-        this.setTitle("Clavier numérique de la cabine d'ascenceur");
+        this.setTitle("Elevator's numeric keyboard");
     }
 
     public static void main(String[] args) {

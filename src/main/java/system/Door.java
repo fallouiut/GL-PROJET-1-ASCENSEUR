@@ -17,4 +17,10 @@ public class Door {
         this.isOpened = false;
         System.out.println("Door closed");
     }
+    
+    public boolean getState()
+    {
+    	return isOpened;
+    }
+    
 }
