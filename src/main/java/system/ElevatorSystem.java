@@ -2,6 +2,7 @@ package system;
 
 import java.util.Collection;
 import java.util.Observable;
+import java.util.concurrent.TimeUnit;
 
 
 import system.Elevator;
@@ -22,7 +23,10 @@ public class ElevatorSystem extends Observable {
 
     private Elevator elevator;
 
+    private Door door;
+
     public ElevatorSystem() {
+        this.door = new Door();
         System.out.println("Initializing system.");
         this.currentStage = 0;
     }
@@ -50,17 +54,25 @@ public class ElevatorSystem extends Observable {
     /** ----- ON A PASSE UN ETAGE EN MONTANT-----*/
     public void stageOverPassedUp() {
         this.currentStage += 1;
+
+        setChanged();
+        notifyObservers();
+
         System.out.println("Floor : " + this.currentStage);
         if(this.currentStage == this.stageToReach - 1) {
             synchronized (this.elevator) {
                 elevator.stopToNext();
             }
-            setChanged();
-            notifyObservers();
         } else if(this.currentStage == this.stageToReach) {
             System.out.println("Floor : " + this.currentStage + " reached");
-            setChanged();
-            notifyObservers();
+            try {
+                door.open();
+                TimeUnit.SECONDS.sleep(3);
+                door.close();
+            } catch (Exception ie) {
+                System.out.println("Porte fermeture echouee");
+                ie.printStackTrace();
+            }
         }
     }
 

@@ -8,8 +8,6 @@ public class Elevator extends Thread {
 
     private boolean stopToNext = false;
     
-    private Door doors;
-    
     private Direction requestedDirection;
 
     private ElevatorSystem system;
@@ -17,13 +15,10 @@ public class Elevator extends Thread {
     public Elevator(ElevatorSystem system, Direction direction) {
         this.system = system;
         this.requestedDirection = direction;
-        doors = new Door();
     }
 
     public void run() {
         try {
-        	if (doors.getState())
-        		doors.close();
             switch (this.requestedDirection) {
                 case TRACT_UP:
                     this.tractUp();
@@ -47,15 +42,10 @@ public class Elevator extends Thread {
             synchronized (this) {
                 while (!this.stopToNext) {
                     TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
-                    //Thread.sleep(ElevatorSystem.frequencyMILLIS);
                     this.system.stageOverPassedUp();
                 }
                 // pour le dernier etage
-                if (!doors.getState())
-                	doors.open();
                 TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
-                if (doors.getState())
-                	doors.close();
                 this.system.stageOverPassedUp();
             }
         } catch (Exception e) {
@@ -73,13 +63,8 @@ public class Elevator extends Thread {
                     this.system.stageOverPassedDown();
                 }
                 // pour le dernier etage
-
                 TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
                 this.system.stageOverPassedDown();
-                if (!doors.getState())
-                	doors.open();
-                if (doors.getState())
-                	doors.close();
             }
         } catch (Exception e) {
             System.out.println("Elevator: tractDown() crash");

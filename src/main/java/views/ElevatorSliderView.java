@@ -10,6 +10,7 @@ import javax.swing.plaf.SliderUI;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -20,9 +21,16 @@ public class ElevatorSliderView extends JFrame implements Observer {
 
     public ElevatorSliderView(int steps, ElevatorSystem system) {
         this.slider = new JSlider(JSlider.VERTICAL, 0, steps, 0);
+
+        this.slider.setMajorTickSpacing(steps);
+        this.slider.setMinorTickSpacing(0);
+        this.slider.setPaintTicks(true);
+        this.slider.setPaintLabels(true);
+
+
+
         for (MouseListener listener : slider.getMouseListeners())
         	slider.removeMouseListener(listener);
-
 
         this.elevatorSystem = system;
         this.elevatorSystem.addObserver(this);
@@ -30,10 +38,12 @@ public class ElevatorSliderView extends JFrame implements Observer {
         this.add(this.slider);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+
         this.slider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                System.out.println("Floor : " + slider.getValue());
+                // TODO: A supprimer si rien a faire
+                // TODO: ou notifier system comme quoi le changement s'est fait
             }
         });
 
@@ -45,7 +55,6 @@ public class ElevatorSliderView extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("Update");
         this.slider.setValue(elevatorSystem.getCurrentStage());
     }
 }
