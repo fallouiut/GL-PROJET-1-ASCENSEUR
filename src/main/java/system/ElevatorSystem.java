@@ -67,7 +67,7 @@ public class ElevatorSystem extends Observable {
     /** ----- ON A PASSE UN ETAGE EN DESCENDANT -----*/
     public void stageOverPassedDown() {
         this.currentStage -= 1;
-        System.out.println("Etage : " + this.currentStage);
+        System.out.println("Floor : " + this.currentStage);
         if(this.currentStage == this.stageToReach + 1) {
             synchronized (this.elevator) {
                 elevator.stopToNext();
