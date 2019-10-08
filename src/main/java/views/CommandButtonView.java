@@ -1,13 +1,16 @@
 package views;
 
 import system.ElevatorSystem;
+import system.Notification;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
 
-public class CommandButtonView extends JFrame {
+public class CommandButtonView extends JFrame implements Observer {
 
     private JButton[] commandButtons;
     private ElevatorSystem system;
@@ -16,15 +19,18 @@ public class CommandButtonView extends JFrame {
         this.commandButtons = new JButton[steps + 1];
 
         this.system = system;
+        this.system.addObserver(this);
 
         for (int i = 0; i <= steps; ++i) {
             this.commandButtons[i] = new JButton(String.valueOf(i));
             this.add(this.commandButtons[i]);
             this.setSize(new Dimension(50, 50));
+
             this.commandButtons[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                System.out.println("User inside elevator demands floor " + ((JButton) e.getSource()).getText());
+                    JButton pressed =  ((JButton) e.getSource());
+                    transmitRequest(Integer.parseInt(pressed.getText()));
                 }
             });
         }
@@ -34,7 +40,34 @@ public class CommandButtonView extends JFrame {
         this.getContentPane().setLayout(new GridLayout(3, 3));
         this.setTitle("Elevator's numeric keyboard");
     }
-/*
+
+    public void transmitRequest(int stage) {
+        this.system.takeRequest(stage);
+    }
+
+    public void  colore(int stage) {
+        if(this.commandButtons[stage] != null) {
+            this.commandButtons[stage].setBackground(Color.cyan);
+        }
+    }
+
+    public void delecore(int stage) {
+
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Notification action = (Notification) arg;
+
+        switch (action.getType()) {
+            case REQUEST_TAKEN_BY_SYSTEM:
+                this.colore(action.getStageConcerned());
+                break;
+
+        }
+    }
+
+    /*
     public static void main(String[] args) {
         CommandButtonView view = new CommandButtonView(5);
         view.setVisible(true);

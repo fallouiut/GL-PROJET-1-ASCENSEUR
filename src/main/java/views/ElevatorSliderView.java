@@ -2,6 +2,7 @@ package views;
 
 import system.Elevator;
 import system.ElevatorSystem;
+import system.Notification;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -19,8 +20,8 @@ public class ElevatorSliderView extends JFrame implements Observer {
     private JSlider slider;
     private ElevatorSystem elevatorSystem;
 
-    public ElevatorSliderView(int steps, ElevatorSystem system) {
-        this.slider = new JSlider(JSlider.VERTICAL, 0, steps, 0);
+    public ElevatorSliderView(int steps, ElevatorSystem system, int first) {
+        this.slider = new JSlider(JSlider.VERTICAL, 0, steps, first);
 
         this.slider.setMajorTickSpacing(steps);
         this.slider.setMinorTickSpacing(0);
@@ -55,6 +56,14 @@ public class ElevatorSliderView extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        Notification action = (Notification) arg;
+
+        switch (action.getType()){
+            case STAGE_OVERPASSED:
+                slider.setValue(this.elevatorSystem.getCurrentStage());
+                break;
+        }
+
         this.slider.setValue(elevatorSystem.getCurrentStage());
     }
 }
