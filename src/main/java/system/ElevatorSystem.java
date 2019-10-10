@@ -62,7 +62,7 @@ public class ElevatorSystem extends Observable {
 
         // trier la file cabine en fonction de la direction // modifier et peut etr mettre un treetSet
         // avec un comparator
-        
+        // pareil pour file montee et file descente
 
         // puis tu parcours la file adequate en fonction de la direction
         // on trie la file dans l'ordre croissant pour montée et décroissant pour descente
