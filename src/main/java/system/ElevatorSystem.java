@@ -53,24 +53,27 @@ public class ElevatorSystem extends Observable {
 
     public void chooseNext() {
         // TODO: pour Mehdi
-        int newStage = this.cabineRequest.get(0);
-        this.cabineRequest.remove(0);
-        // essaie de trouver un algo
-        // si il faut supprimer les 3 listes et en faire une vas-y a ce moment il faudra me le dire pour que je modifie
-        // les deux fonctions qui prennent les requetes
+        int newStage = this.cabineRequest.get(0); // juste pour faire marcher le systeme
+        this.cabineRequest.remove(0);      // TODO: a enlever
 
-        // mon idée est s'il ny a personne dans l'ascenseur a ce moment tu traites les requetes des etages
-        // sinon s'il tu dois monter et qu'entre temps il y a des gens qui veulent ussi monter, tu les traites aussi
-        // pareil si tu descent
+        // on veut prendre la prochain etage et deduire la direction
+        // et s'il y a des etahes intermediaire(floorRequestUP si on monte) il faut les desservir d'une pierre deux coup
+        // donc etage a atteindre = requeteCabine.premier()
 
-        // il y a des milliers de strategies, dsl tu a le truc le plus complexe a faire, si je finis je le fais avec toi
+        // trier la file cabine en fonction de la direction // modifier et peut etr mettre un treetSet
+        // avec un comparator
+        
 
-        // il faut aussi que l'ascenseur puisse s'arreter entre temps sil y a un etage dans le sens de direction
-        // ca se fera surement ailleurs dans tractDown ou tractUp
-        // mais le probleme est qu'on va perdre l'etage de base
-        // donc on aura atteint des que currentStage == stageToReach == file.premier()
-        // donc si file.premier() = 8 et qu'il y a 5 qui veut monter
-        // stage to reach = 5 mais on continue a aller vers 8
+        // puis tu parcours la file adequate en fonction de la direction
+        // on trie la file dans l'ordre croissant pour montée et décroissant pour descente
+        // s'il y a des etages entre current_etage et etage_a_atteindre
+        // etage a atteindre = file.current()
+        // tu tourne, et ca ca va remonter jusqu'a requeteCabine.premier()
+        // des que current etage = requeteCabine.premier() c qu'on l'a atteint et on l'enleve de la file
+
+        // Ex: la cabine demande 8, on est à 0, on va monter
+        // etage 3 et 5 veulent monter, on dessert 3 puis 5 puis plus rien dans floorUp
+        // on monte à 8 qui est tjr le premier de etage cabine
 
         // tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
         this.tract(newStage);
