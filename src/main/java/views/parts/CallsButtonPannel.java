@@ -1,19 +1,28 @@
 package views.parts;
 
+import system.Elevator;
+import system.ElevatorSystem;
+import system.Notification;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
 
-public class CallsButtonPannel extends JPanel {
+public class CallsButtonPannel extends JPanel implements Observer {
 
     private int step;
     private JLabel stepLabel;
     private JButton up;
     private JButton down;
+    private ElevatorSystem system;
 
-    public CallsButtonPannel(final int step) {
+    public CallsButtonPannel(final int step, final ElevatorSystem system) {
         this.step = step;
+        this.system = system;
+        this.system.addObserver(this);
 
         ImageIcon iconUp = this.resize(new ImageIcon("icon_up.png"));
         ImageIcon iconDown = this.resize(new ImageIcon("icon_down.png"));
@@ -28,13 +37,13 @@ public class CallsButtonPannel extends JPanel {
 
         this.up.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println(step + " wants to go up");
+                system.takeRequestOnFloor(step, Elevator.Direction.TRACT_UP);
             }
         });
 
         this.down.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println(step + " wants to do down");
+                system.takeRequestOnFloor(step, Elevator.Direction.TRACT_DOWN);
             }
         });
     }
@@ -45,16 +54,32 @@ public class CallsButtonPannel extends JPanel {
         return new ImageIcon(newImg);  // transform it back
     }
 
-    public static void main(String args[]) {
-        JFrame frame = new JFrame();
-
-        for (int i = 5; i >= 0; --i) {
-            frame.add(new CallsButtonPannel(i));
+    public void colore(Elevator.Direction direction) {
+        if (direction == Elevator.Direction.TRACT_DOWN) {
+            this.down.setBackground(Color.cyan);
+            System.out.println("down " + this.step + " dessine");
+        } else {
+            this.up.setBackground(Color.cyan);
+            System.out.println("up " + this.step + " dessine");
         }
+    }
 
-        frame.getContentPane().setLayout(new FlowLayout());
-        frame.setSize(300, 300);
-        frame.setVisible(true);
+    public void delecore(int stage) {
+        this.up.setBackground(new JButton().getBackground());
+        this.down.setBackground(new JButton().getBackground());
+    }
 
+    @Override
+    public void update(Observable o, Object arg) {
+        Notification action = (Notification) arg;
+
+        if (action.getStageConcerned() == this.step) {
+            switch (action.getType()) {
+                case REQUEST_FLOOR_TAKEN_BY_SYSTEM:
+                    colore(action.getDirection());
+                case STAGE_REACHED:
+                    this.delecore(action.getStageConcerned());
+            }
+        }
     }
 }

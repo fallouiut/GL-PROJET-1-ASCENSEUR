@@ -35,7 +35,7 @@ public class CallsButtonView extends JFrame implements Observer {
 
     public void initCallButtons(int steps) {
         for(int i = steps; i >= 0; --i) {
-            this.callButtonsView[i] = new CallsButtonPannel(i);
+            this.callButtonsView[i] = new CallsButtonPannel(i, system);
             this.add(this.callButtonsView[i]);
         }
     }

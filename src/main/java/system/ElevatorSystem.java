@@ -2,6 +2,7 @@ package system;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.TimeUnit;
 
@@ -21,9 +22,10 @@ public class ElevatorSystem extends Observable {
     // nombre d'etages max
     private int maxStages;
 
-    // liste des etages montant et descendant
-    private Collection<Integer> amountingStages;
-    private Collection<Integer> descendingStages;
+    // liste des etages montant et descendant, ainsi que les requetes cabine
+    private volatile List<Integer> cabineRequest;
+    private volatile List<Integer> floorRequestUP;
+    private volatile List<Integer> floorRequestDOWN;
 
     // gestionnaire ascenseur (et vue)
     private Elevator elevator;
@@ -44,67 +46,82 @@ public class ElevatorSystem extends Observable {
         this.currentDirection = Elevator.Direction.TRACT_UP;
 
         // TODO: a mettre dans start()
-        this.amountingStages = new ArrayList<Integer>(this.maxStages);
-        this.descendingStages = new ArrayList<Integer>(this.maxStages);
-
+        this.floorRequestDOWN = new ArrayList<Integer>(this.maxStages);
+        this.floorRequestUP = new ArrayList<Integer>(this.maxStages);
+        this.cabineRequest = new ArrayList<Integer>(this.maxStages);
     }
 
     public void chooseNext() {
         // TODO: pour Mehdi
-        int newStage = 5;
-        // tu  fais ton algo pour choisir le prochain etage
-        // tu appelles la fonction tract() pour lancer le truc en psasant le nouvel etage
+        int newStage = this.cabineRequest.get(0);
+        this.cabineRequest.remove(0);
+        // essaie de trouver un algo
+        // si il faut supprimer les 3 listes et en faire une vas-y a ce moment il faudra me le dire pour que je modifie
+        // les deux fonctions qui prennent les requetes
+
+        // mon idée est s'il ny a personne dans l'ascenseur a ce moment tu traites les requetes des etages
+        // sinon s'il tu dois monter et qu'entre temps il y a des gens qui veulent ussi monter, tu les traites aussi
+        // pareil si tu descent
+
+        // il y a des milliers de strategies, dsl tu a le truc le plus complexe a faire, si je finis je le fais avec toi
+
+        // il faut aussi que l'ascenseur puisse s'arreter entre temps sil y a un etage dans le sens de direction
+        // ca se fera surement ailleurs dans tractDown ou tractUp
+        // mais le probleme est qu'on va perdre l'etage de base
+        // donc on aura atteint des que currentStage == stageToReach == file.premier()
+        // donc si file.premier() = 8 et qu'il y a 5 qui veut monter
+        // stage to reach = 5 mais on continue a aller vers 8
+
+        // tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
         this.tract(newStage);
     }
 
-    public void waitAndGo() {
-        while (amountingStages.size() != 0 || descendingStages.size() != 0) {
-            chooseNext();
+    public void waitToGo() {
+        while (floorRequestDOWN.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty()) {
+            continue;
         }
+        System.out.println("Requete, choose next");
+        chooseNext();
     }
 
     public void tract(int newStage) {
         this.stageToReach = newStage;
-        if(this.currentStage < this.stageToReach) {
+        if (this.currentStage < this.stageToReach) {
             this.getUP();
-        } else if(this.currentStage > this.stageToReach) {
+        } else if (this.currentStage > this.stageToReach) {
             this.getDOWN();
         }
     }
 
     /**
-     * ----- PRENDRE UNE REQUETE -----
+     * ----- PRENDRE UNE REQUETE DES ETAGES (montant ou descendant) -----
      */
-    public void takeRequest(int stage) {
+    public void takeRequestOnFloor(int stage, Elevator.Direction direction) {
         // si le sens demandé est la montée
         if (stage >= 0 && stage <= this.maxStages) {
-            /** MOUVEMENT VERS HAUT */
-            if (this.currentStage < stage) {
-                // si on monte mais que nouvel Etage < etage a atteindre, on peut s'arreter entre temps et continuer
-                if (stage < this.stageToReach && this.currentDirection == Elevator.Direction.TRACT_UP) {
-                    this.amountingStages.add(stageToReach);
-                    this.stageToReach = stage;
-                    System.out.println("Stage : " + stage + " devient la priorité");
-                } else {
-                    this.amountingStages.add(stage);
-                    System.out.println("ajouté en liste montée");
-
+            /** LETAGE DEMANDE UNE MONTEE */
+            if (direction == Elevator.Direction.TRACT_UP) {
+                if (!this.floorRequestUP.contains(stage)) {
+                    this.floorRequestUP.add(stage);
                 }
             }
-            /** MOUVEMENT VERS BAS */
-            else if (this.currentStage > stage) {
-                // si on descend mais que nouvel Etage > etage a atteindre, on peut s'arreter entre temps et continuer
-                if (stage > this.stageToReach && this.currentDirection == Elevator.Direction.TRACT_DOWN) {
-                    this.descendingStages.add(stageToReach);
-                    this.stageToReach = stage;
-                    System.out.println("Stage : " + stage + " devient la priorité");
-                } else {
-                    this.descendingStages.add(stage);
-                    System.out.println("ajoutée en liste descente");
+            /** LETAGE DEMANDE UNE DESCENTE */
+            else {
+                if (!this.floorRequestDOWN.contains(stage)) {
+                    this.floorRequestDOWN.add(stage);
                 }
             }
+            System.out.println("Recu");
             setChanged();
-            notifyObservers(new Notification(Notification.Type.REQUEST_TAKEN_BY_SYSTEM, stage));
+            notifyObservers(new Notification(Notification.Type.REQUEST_FLOOR_TAKEN_BY_SYSTEM, stage, direction));
+        }
+    }
+
+    public void takeRequestOnCabine(int stage) {
+        if (stage >= 0 && stage <= this.maxStages && !this.cabineRequest.contains(stage)) {
+            this.cabineRequest.add(stage);
+            setChanged();
+            notifyObservers(new Notification(Notification.Type.REQUEST_CABINE_TAKEN_BY_SYSTEM, stage));
         }
     }
 
@@ -154,6 +171,13 @@ public class ElevatorSystem extends Observable {
                 door.open();
                 TimeUnit.SECONDS.sleep(3);
                 door.close();
+
+                setChanged();
+                notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
+
+                // on retourne à l'etat d'attente(diagramme etat systeme)
+                this.waitToGo();
+
             } catch (Exception ie) {
                 System.out.println("Porte fermeture echouee");
                 ie.printStackTrace();
@@ -168,7 +192,7 @@ public class ElevatorSystem extends Observable {
         this.currentStage -= 1;
 
         setChanged();
-        notifyObservers();
+        notifyObservers(new Notification(Notification.Type.STAGE_OVERPASSED, this.currentStage));
 
         System.out.println("Floor : " + this.currentStage);
         if (this.currentStage == this.stageToReach + 1) {
@@ -181,6 +205,13 @@ public class ElevatorSystem extends Observable {
                 door.open();
                 TimeUnit.SECONDS.sleep(3);
                 door.close();
+
+                setChanged();
+                notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
+
+                // on retourne à l'etat d'attente(diagramme etat systeme)
+                this.waitToGo();
+
             } catch (Exception ie) {
                 System.out.println("Porte fermeture echouee");
                 ie.printStackTrace();

@@ -29,7 +29,7 @@ public class CommandButtonView extends JFrame implements Observer {
             this.commandButtons[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    JButton pressed =  ((JButton) e.getSource());
+                    JButton pressed = ((JButton) e.getSource());
                     transmitRequest(Integer.parseInt(pressed.getText()));
                 }
             });
@@ -42,17 +42,19 @@ public class CommandButtonView extends JFrame implements Observer {
     }
 
     public void transmitRequest(int stage) {
-        this.system.takeRequest(stage);
+        this.system.takeRequestOnCabine(stage);
     }
 
-    public void  colore(int stage) {
-        if(this.commandButtons[stage] != null) {
+    public void colore(int stage) {
+        if (this.commandButtons[stage] != null) {
             this.commandButtons[stage].setBackground(Color.cyan);
         }
     }
 
     public void delecore(int stage) {
-
+        if (this.commandButtons[stage] != null) {
+            this.commandButtons[stage].setBackground(new JButton().getBackground());
+        }
     }
 
     @Override
@@ -60,9 +62,11 @@ public class CommandButtonView extends JFrame implements Observer {
         Notification action = (Notification) arg;
 
         switch (action.getType()) {
-            case REQUEST_TAKEN_BY_SYSTEM:
+            case REQUEST_CABINE_TAKEN_BY_SYSTEM:
                 this.colore(action.getStageConcerned());
                 break;
+            case STAGE_REACHED:
+                this.delecore(action.getStageConcerned());
 
         }
     }

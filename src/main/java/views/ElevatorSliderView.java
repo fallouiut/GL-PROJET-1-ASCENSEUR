@@ -29,9 +29,8 @@ public class ElevatorSliderView extends JFrame implements Observer {
         this.slider.setPaintLabels(true);
 
 
-
         for (MouseListener listener : slider.getMouseListeners())
-        	slider.removeMouseListener(listener);
+            slider.removeMouseListener(listener);
 
         this.elevatorSystem = system;
         this.elevatorSystem.addObserver(this);
@@ -58,7 +57,7 @@ public class ElevatorSliderView extends JFrame implements Observer {
     public void update(Observable o, Object arg) {
         Notification action = (Notification) arg;
 
-        switch (action.getType()){
+        switch (action.getType()) {
             case STAGE_OVERPASSED:
                 slider.setValue(this.elevatorSystem.getCurrentStage());
                 break;

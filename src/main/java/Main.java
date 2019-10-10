@@ -16,7 +16,6 @@ public class Main {
             ElevatorSystem elevatorSystem = new ElevatorSystem(STEPS);
             elevatorSystem.frequencyMILLIS = FREQM;
             elevatorSystem.setCurrentStage(FIRST);
-            elevatorSystem.setStageToReach(5);
             /*elevatorSystem.getUP();*/
 
             ElevatorSliderView elevatorSlider = new ElevatorSliderView(STEPS, elevatorSystem, FIRST);
@@ -29,6 +28,8 @@ public class Main {
             operativeView.show();
             commandButtonView.show();
             //systemsActionView.show();
+
+            elevatorSystem.waitToGo();
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
