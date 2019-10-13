@@ -2,6 +2,7 @@ import system.ElevatorSystem;
 import views.CommandButtonView;
 import views.ElevatorSliderView;
 import views.CallsButtonView;
+import views.SystemsActionView;
 
 import java.io.File;
 
@@ -21,13 +22,13 @@ public class Main {
             ElevatorSliderView elevatorSlider = new ElevatorSliderView(STEPS, elevatorSystem, FIRST);
             CallsButtonView operativeView = new CallsButtonView(STEPS, elevatorSystem);
             CommandButtonView commandButtonView = new CommandButtonView(STEPS, elevatorSystem);
-            //SystemsActionView systemsActionView = new SystemsActionView();
+            SystemsActionView systemsActionView = new SystemsActionView();
 
             /** -------- SHOW VIEWS AFTER STARTING SYSTEM --------------*/
             elevatorSlider.show();
             operativeView.show();
             commandButtonView.show();
-            //systemsActionView.show();
+            systemsActionView.show();
 
             elevatorSystem.waitToGo();
 

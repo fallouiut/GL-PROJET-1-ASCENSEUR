@@ -1,9 +1,6 @@
 package system;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Observable;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -24,8 +21,8 @@ public class ElevatorSystem extends Observable {
 
     // liste des etages montant et descendant, ainsi que les requetes cabine
     private volatile List<Integer> cabineRequest;
-    private volatile List<Integer> floorRequestUP;
-    private volatile List<Integer> floorRequestDOWN;
+    private volatile TreeSet<Integer> floorRequestUP;
+    private volatile TreeSet<Integer> floorRequestDOWN;
 
     // gestionnaire ascenseur (et vue)
     private Elevator elevator;
@@ -42,20 +39,49 @@ public class ElevatorSystem extends Observable {
         this.currentStage = 0;
         this.maxStages = maxStages;
 
-        // TODO: a enlever (juste pour tester takeRequest())
-        this.currentDirection = Elevator.Direction.TRACT_UP;
-
         // TODO: a mettre dans start()
-        this.floorRequestDOWN = new ArrayList<Integer>(this.maxStages);
-        this.floorRequestUP = new ArrayList<Integer>(this.maxStages);
         this.cabineRequest = new ArrayList<Integer>(this.maxStages);
+
+        // pour monter faut avoir
+        this.floorRequestUP = new TreeSet<Integer>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o1-o2;
+            }
+        });
+
+        this.floorRequestDOWN = new TreeSet<Integer>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2-o1;
+            }
+        });
     }
 
-    public void chooseNext() {
+    public void chooseNext() {/*
         // TODO: pour Mehdi
-        int newStage = this.cabineRequest.get(0); // juste pour faire marcher le systeme
-        this.cabineRequest.remove(0);      // TODO: a enlever
+        int nextStage = this.cabineRequest.peek(); // juste pour faire marcher le systeme
+        //this.cabineRequest.remove(0);      // TODO: a enlever
 
+        // on va chercher des etages intermediaire a servir d'une pierre deux coups
+        Integer intermediateStage = null;
+        if (nextStage > this.currentStage) { // on monte
+            for (Integer between : this.floorRequestUP) {
+                if (between > this.currentStage && between < nextStage) {
+                    intermediateStage = between;
+                    break;
+                }
+            }
+            if (intermediateStage == null) {
+                nextStage = cabineRequest.pop();
+            } else {
+                nextStage = intermediateStage.intValue();
+            }
+        } else {
+            // pareil dans le sens inverse pour la descente
+        }
+
+        this.tract(nextStage);*/
         // on veut prendre la prochain etage et deduire la direction
         // et s'il y a des etahes intermediaire(floorRequestUP si on monte) il faut les desservir d'une pierre deux coup
         // donc etage a atteindre = requeteCabine.premier()
@@ -76,7 +102,6 @@ public class ElevatorSystem extends Observable {
         // on monte à 8 qui est tjr le premier de etage cabine
 
         // tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
-        this.tract(newStage);
     }
 
     public void waitToGo() {
