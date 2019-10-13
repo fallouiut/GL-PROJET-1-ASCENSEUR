@@ -20,7 +20,7 @@ public class ElevatorSystem extends Observable {
     private int maxStages;
 
     // liste des etages montant et descendant, ainsi que les requetes cabine
-    private volatile List<Integer> cabineRequest;
+    private volatile Queue<Integer> cabineRequest;
     private volatile TreeSet<Integer> floorRequestUP;
     private volatile TreeSet<Integer> floorRequestDOWN;
 
@@ -40,75 +40,96 @@ public class ElevatorSystem extends Observable {
         this.maxStages = maxStages;
 
         // TODO: a mettre dans start()
-        this.cabineRequest = new ArrayList<Integer>(this.maxStages);
+        this.cabineRequest = new PriorityQueue<Integer>();
 
         // pour monter faut avoir
         this.floorRequestUP = new TreeSet<Integer>(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return o1-o2;
+                return o1 - o2;
             }
         });
 
         this.floorRequestDOWN = new TreeSet<Integer>(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return o2-o1;
+                return o2 - o1;
             }
         });
     }
 
-    public void chooseNext() {/*
-        // TODO: pour Mehdi
-        int nextStage = this.cabineRequest.peek(); // juste pour faire marcher le systeme
-        //this.cabineRequest.remove(0);      // TODO: a enlever
+    /*
+     on veut prendre la prochain etage et deduire la direction
+     et s'il y a des etahes intermediaire(floorRequestUP si on monte) il faut les desservir d'une pierre deux coup
+     donc etage a atteindre = requeteCabine.premier()
 
-        // on va chercher des etages intermediaire a servir d'une pierre deux coups
-        Integer intermediateStage = null;
-        if (nextStage > this.currentStage) { // on monte
-            for (Integer between : this.floorRequestUP) {
-                if (between > this.currentStage && between < nextStage) {
-                    intermediateStage = between;
-                    break;
+     trier la file cabine en fonction de la direction // modifier et peut etr mettre un treetSet
+     avec un comparator
+     pareil pour file montee et file descente
+
+     puis tu parcours la file adequate en fonction de la direction
+     on trie la file dans l'ordre croissant pour montée et décroissant pour descente
+     s'il y a des etages entre current_etage et etage_a_atteindre
+     etage a atteindre = file.current()
+     tu tourne, et ca ca va remonter jusqu'a requeteCabine.premier()
+     des que current etage = requeteCabine.premier() c qu'on l'a atteint et on l'enleve de la file
+
+     Ex: la cabine demande 8, on est à 0, on va monter
+     etage 3 et 5 veulent monter, on dessert 3 puis 5 puis plus rien dans floorUp
+     on monte à 8 qui est tjr le premier de etage cabine
+
+     tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
+*/
+    public void chooseNext() {
+        int nextStage;
+        if (this.cabineRequest.size() > 0) {
+            nextStage = this.cabineRequest.peek();
+            System.out.println("this.cabineRequest.peek(): " + nextStage);
+
+            Integer intermediateStage = null;
+            if (nextStage > this.currentStage) { // on monte
+                for (Integer between : this.floorRequestUP) { // on regarde s'il ya un intermediaire dans la montée
+                    // si l'etage se situe entre current-next
+                    if (between > this.currentStage && between < nextStage) {
+                        intermediateStage = between;
+                        System.out.println("intermediate found: " + intermediateStage);
+                        break;
+                    }
+                }
+                if (intermediateStage != null) {
+                    nextStage = intermediateStage.intValue();
+                    System.out.println("changement next stage: " + nextStage);
+                }
+            } else {
+                // pareil dans le sens inverse pour la descente
+                for (Integer between : this.floorRequestDOWN) {
+                    // si l'etage se situe entre current-next
+                    if (between < this.currentStage && between > nextStage) {
+                        System.out.println("intermediate found: " + intermediateStage);
+                        intermediateStage = between;
+                        break;
+                    }
+                }
+                if (intermediateStage != null) {
+                    System.out.println("changement next stage: " + nextStage);
+                    nextStage = intermediateStage.intValue();
                 }
             }
-            if (intermediateStage == null) {
-                nextStage = cabineRequest.pop();
-            } else {
-                nextStage = intermediateStage.intValue();
-            }
         } else {
-            // pareil dans le sens inverse pour la descente
+            nextStage = 0;
+            System.out.println("File vide");
         }
+        System.out.println("Stage to reach " + nextStage);
 
-        this.tract(nextStage);*/
-        // on veut prendre la prochain etage et deduire la direction
-        // et s'il y a des etahes intermediaire(floorRequestUP si on monte) il faut les desservir d'une pierre deux coup
-        // donc etage a atteindre = requeteCabine.premier()
-
-        // trier la file cabine en fonction de la direction // modifier et peut etr mettre un treetSet
-        // avec un comparator
-        // pareil pour file montee et file descente
-
-        // puis tu parcours la file adequate en fonction de la direction
-        // on trie la file dans l'ordre croissant pour montée et décroissant pour descente
-        // s'il y a des etages entre current_etage et etage_a_atteindre
-        // etage a atteindre = file.current()
-        // tu tourne, et ca ca va remonter jusqu'a requeteCabine.premier()
-        // des que current etage = requeteCabine.premier() c qu'on l'a atteint et on l'enleve de la file
-
-        // Ex: la cabine demande 8, on est à 0, on va monter
-        // etage 3 et 5 veulent monter, on dessert 3 puis 5 puis plus rien dans floorUp
-        // on monte à 8 qui est tjr le premier de etage cabine
-
-        // tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
+        this.tract(nextStage);
     }
 
     public void waitToGo() {
         while (floorRequestDOWN.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty()) {
             continue;
         }
-        System.out.println("Requete, choose next");
+        System.out.println(cabineRequest.toString());
+        //System.out.println("Requete, choose next");
         chooseNext();
     }
 
@@ -194,22 +215,7 @@ public class ElevatorSystem extends Observable {
                 elevator.stopToNext();
             }
         } else if (this.currentStage == this.stageToReach) {
-            System.out.println("Floor : " + this.currentStage + " reached");
-            try {
-                door.open();
-                TimeUnit.SECONDS.sleep(3);
-                door.close();
-
-                setChanged();
-                notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
-
-                // on retourne à l'etat d'attente(diagramme etat systeme)
-                this.waitToGo();
-
-            } catch (Exception ie) {
-                System.out.println("Porte fermeture echouee");
-                ie.printStackTrace();
-            }
+            this.stageReached();
         }
     }
 
@@ -228,22 +234,31 @@ public class ElevatorSystem extends Observable {
                 elevator.stopToNext();
             }
         } else if (this.currentStage == this.stageToReach) {
-            System.out.println("Floor : " + this.currentStage + " reached");
-            try {
-                door.open();
-                TimeUnit.SECONDS.sleep(3);
-                door.close();
+            this.stageReached();
+        }
+    }
 
-                setChanged();
-                notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
+    public void stageReached() {
+        System.out.println("Floor : " + this.currentStage + " reached");
+        try {
+            door.open();
+            TimeUnit.SECONDS.sleep(3);
+            door.close();
 
-                // on retourne à l'etat d'attente(diagramme etat systeme)
-                this.waitToGo();
+            // on l'enleve une fois achevé
+            this.cabineRequest.remove(this.currentStage);
+            this.floorRequestUP.remove(this.currentStage);
+            this.floorRequestDOWN.remove(this.currentStage);
 
-            } catch (Exception ie) {
-                System.out.println("Porte fermeture echouee");
-                ie.printStackTrace();
-            }
+            setChanged();
+            notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
+
+            // on retourne à l'etat d'attente(diagramme etat systeme)
+            this.waitToGo();
+
+        } catch (Exception ie) {
+            System.out.println("Porte fermeture echouee");
+            ie.printStackTrace();
         }
     }
 
@@ -258,5 +273,21 @@ public class ElevatorSystem extends Observable {
 
     public int getCurrentStage() {
         return currentStage;
+    }
+
+    public static void main(String[] args) {
+        ElevatorSystem system = new ElevatorSystem(5);
+
+        system.cabineRequest.add(0);
+
+        system.floorRequestUP.add(3);
+        system.floorRequestUP.add(4);
+
+        system.currentStage = 5;
+
+        system.chooseNext();
+        System.out.println("Next: " + system.stageToReach);
+        System.out.println(system.cabineRequest.toString());
+        //System.out.println(system.floorRequestDOWN.toString());
     }
 }
