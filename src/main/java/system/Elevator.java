@@ -4,8 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Elevator extends Thread {
 
+    private static int count = 0;
+    private int number;
+
     public enum Direction { TRACT_UP, TRACT_DOWN }
 
+    private boolean stop = false;
     private boolean stopToNext = false;
     
     private Direction requestedDirection;
@@ -15,6 +19,7 @@ public class Elevator extends Thread {
     public Elevator(ElevatorSystem system, Direction direction) {
         this.system = system;
         this.requestedDirection = direction;
+        this.number = count ++;
     }
 
     public void run() {
@@ -40,7 +45,8 @@ public class Elevator extends Thread {
     public void tractUp() {
         try {
             synchronized (this) {
-                while (!this.stopToNext) {
+                while (!this.stopToNext && !stop) {
+                    System.out.println("Thread " + number);
                     TimeUnit.MILLISECONDS.sleep(ElevatorSystem.frequencyMILLIS);
                     this.system.stageOverPassedUp();
                 }
@@ -58,7 +64,8 @@ public class Elevator extends Thread {
     public void tractDown() {
         try {
             synchronized (this) {
-                while (!this.stopToNext) {
+                while (!this.stopToNext && !stop) {
+                    System.out.println("Thread " + number);
                     Thread.sleep(ElevatorSystem.frequencyMILLIS);
                     this.system.stageOverPassedDown();
                 }
@@ -70,6 +77,12 @@ public class Elevator extends Thread {
             System.out.println("Elevator: tractDown() crash");
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public void stopIt() {
+        synchronized (this) {
+            this.stop = true;
         }
     }
 

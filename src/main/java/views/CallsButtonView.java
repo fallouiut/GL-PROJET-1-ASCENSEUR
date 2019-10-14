@@ -8,7 +8,7 @@ import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
 
-public class CallsButtonView extends JFrame implements Observer {
+public class CallsButtonView extends JFrame {
 
     private CallsButtonPannel[] callButtonsView;
     private ElevatorSystem system;
@@ -17,7 +17,6 @@ public class CallsButtonView extends JFrame implements Observer {
         this.callButtonsView = new CallsButtonPannel[steps+1];
 
         this.system = system;
-        this.system.addObserver(this);
 
         this.getContentPane().setLayout(new FlowLayout());
         this.initCallButtons(steps);
@@ -40,8 +39,5 @@ public class CallsButtonView extends JFrame implements Observer {
         }
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
 
-    }
 }

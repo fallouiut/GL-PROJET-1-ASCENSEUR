@@ -57,14 +57,12 @@ public class CallsButtonPannel extends JPanel implements Observer {
     public void colore(Elevator.Direction direction) {
         if (direction == Elevator.Direction.TRACT_DOWN) {
             this.down.setBackground(Color.cyan);
-            System.out.println("down " + this.step + " dessine");
         } else {
             this.up.setBackground(Color.cyan);
-            System.out.println("up " + this.step + " dessine");
         }
     }
 
-    public void delecore(int stage) {
+    public void delecore() {
         this.up.setBackground(new JButton().getBackground());
         this.down.setBackground(new JButton().getBackground());
     }
@@ -76,9 +74,11 @@ public class CallsButtonPannel extends JPanel implements Observer {
         if (action.getStageConcerned() == this.step) {
             switch (action.getType()) {
                 case REQUEST_FLOOR_TAKEN_BY_SYSTEM:
-                    colore(action.getDirection());
+                    this.colore(action.getDirection());
+                    break;
                 case STAGE_REACHED:
-                    this.delecore(action.getStageConcerned());
+                    this.delecore();
+                    break;
             }
         }
     }

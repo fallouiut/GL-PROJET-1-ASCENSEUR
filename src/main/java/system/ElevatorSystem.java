@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+import sun.reflect.generics.tree.Tree;
 import system.Elevator;
 
 public class ElevatorSystem extends Observable {
@@ -81,9 +82,8 @@ public class ElevatorSystem extends Observable {
      tu appelles la fonction tract() pour lancer le truc en passant le nouvel etage
 */
     public void chooseNext() {
-        int nextStage;
         if (this.cabineRequest.size() > 0) {
-            nextStage = this.cabineRequest.peek();
+            int nextStage = this.cabineRequest.peek();
             System.out.println("this.cabineRequest.peek(): " + nextStage);
 
             Integer intermediateStage = null;
@@ -115,29 +115,83 @@ public class ElevatorSystem extends Observable {
                     nextStage = intermediateStage.intValue();
                 }
             }
-        } else {
-            nextStage = 0;
-            System.out.println("File vide");
-        }
-        System.out.println("Stage to reach " + nextStage);
+            System.out.println("Stage to reach " + nextStage);
 
-        this.tract(nextStage);
+            this.tract(nextStage);
+        } else { // If cabineRequest.size == 0
+            // on verifie les appels externes et on choisit le plus proche
+            int nextStage;
+
+            /** CALCUL DE LA PLUS PROCHE REQUETE EXTERNE */
+            if (!floorRequestDOWN.isEmpty() && !floorRequestUP.isEmpty()) { // Si il en existe une de chaque
+                int closestUp = this.getClosestStage("UP");
+                int closestDown = floorRequestUP.first() - this.getClosestStage("DOWN");
+
+                if (Math.abs(currentStage - closestUp) < Math.abs(currentStage - closestDown)) {
+                    nextStage = closestUp;
+                    this.floorRequestUP.remove(nextStage);
+                }
+                else {
+                    nextStage = closestDown;
+                    this.floorRequestDOWN.remove(nextStage);
+                }
+            } else {
+                if (!floorRequestDOWN.isEmpty()) { // S'il existe qu'une requete descendante
+                    nextStage = this.getClosestStage("DOWN");
+                }
+                else if (!floorRequestUP.isEmpty()) { // Si il existe qu'une requete montante
+                    nextStage = this.getClosestStage("UP");
+                }
+                else { // inutile mais pour eviter erreur
+                    nextStage = this.currentStage == 0 ? this.maxStages: 0;
+                }
+            }
+
+            System.out.println("Cabine : " + cabineRequest.toString());
+            System.out.println("Up : " + floorRequestUP.toString());
+            System.out.println("Down : " + floorRequestDOWN.toString());
+
+            this.tract(nextStage);
+        }
+    }
+
+    public int getClosestStage(String direction) {
+        TreeSet<Integer> listToCheck = direction == "UP" ? this.floorRequestUP: floorRequestDOWN;
+
+        Integer currentClosest = null;
+        Integer currentEcart = null;
+        for(Integer stage: listToCheck) {
+            int ecart = Math.abs(currentStage - stage);
+            if(currentEcart == null) {
+                currentEcart = ecart;
+                currentClosest = stage;
+            } else if(ecart < currentEcart) {
+                currentClosest = stage;
+                currentEcart = ecart;
+            }
+        }
+
+        return currentClosest;
     }
 
     public void waitToGo() {
-        while (floorRequestDOWN.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty()) {
+        while (floorRequestUP.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty()) {
             continue;
         }
-        System.out.println(cabineRequest.toString());
-        //System.out.println("Requete, choose next");
+        System.out.println("Choosing next floor to reach");
         chooseNext();
     }
 
     public void tract(int newStage) {
         this.stageToReach = newStage;
+        System.out.println("------------------------");
+        System.out.println("\u001B[32m -Current stage: " + this.currentStage);
+        System.out.println("\u001B[32m -Next stage to reach " + this.stageToReach + "\u001B[0m");
         if (this.currentStage < this.stageToReach) {
+            System.out.println("\u001B[32m -On monte" + "\u001B[0m");
             this.getUP();
         } else if (this.currentStage > this.stageToReach) {
+            System.out.println("\u001B[32m -On descend" + "\u001B[0m");
             this.getDOWN();
         }
     }
@@ -183,6 +237,7 @@ public class ElevatorSystem extends Observable {
         }
         this.currentDirection = Elevator.Direction.TRACT_UP;
         System.out.println("Going up to floor : " + this.stageToReach);
+
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_UP);
         elevator.start();
     }
@@ -195,7 +250,9 @@ public class ElevatorSystem extends Observable {
             throw new IllegalArgumentException("Can't go down if the floor to reach is lower than the current floor.");
         }
         this.currentDirection = Elevator.Direction.TRACT_DOWN;
+
         System.out.println("Going down to floor : " + this.stageToReach);
+
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_DOWN);
         elevator.start();
     }
@@ -245,6 +302,7 @@ public class ElevatorSystem extends Observable {
             TimeUnit.SECONDS.sleep(3);
             door.close();
 
+            this.elevator.stopIt();
             // on l'enleve une fois achevé
             this.cabineRequest.remove(this.currentStage);
             this.floorRequestUP.remove(this.currentStage);
@@ -280,14 +338,14 @@ public class ElevatorSystem extends Observable {
 
         system.cabineRequest.add(0);
 
-        system.floorRequestUP.add(3);
-        system.floorRequestUP.add(4);
+        system.floorRequestDOWN.add(1);
+        system.floorRequestDOWN.add(2);
 
         system.currentStage = 5;
 
-        system.chooseNext();
-        System.out.println("Next: " + system.stageToReach);
-        System.out.println(system.cabineRequest.toString());
+        System.out.println("Closest: " + system.getClosestStage("DOWN"));
         //System.out.println(system.floorRequestDOWN.toString());
     }
+
+
 }
