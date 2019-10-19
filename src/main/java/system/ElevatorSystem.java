@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import sun.reflect.generics.tree.Tree;
 import system.Elevator;
 
@@ -40,7 +41,9 @@ public class ElevatorSystem extends Observable {
         this.currentStage = 0;
         this.maxStages = maxStages;
 
-        // TODO: a mettre dans start()
+        this.elevator = new Elevator(this);
+        this.elevator.start();
+
         this.cabineRequest = new PriorityQueue<Integer>();
 
         // pour monter faut avoir
@@ -84,7 +87,6 @@ public class ElevatorSystem extends Observable {
     public void chooseNext() {
         if (this.cabineRequest.size() > 0) {
             int nextStage = this.cabineRequest.peek();
-            System.out.println("this.cabineRequest.peek(): " + nextStage);
 
             Integer intermediateStage = null;
             if (nextStage > this.currentStage) { // on monte
@@ -92,30 +94,25 @@ public class ElevatorSystem extends Observable {
                     // si l'etage se situe entre current-next
                     if (between > this.currentStage && between < nextStage) {
                         intermediateStage = between;
-                        System.out.println("intermediate found: " + intermediateStage);
                         break;
                     }
                 }
                 if (intermediateStage != null) {
                     nextStage = intermediateStage.intValue();
-                    System.out.println("changement next stage: " + nextStage);
                 }
             } else {
                 // pareil dans le sens inverse pour la descente
                 for (Integer between : this.floorRequestDOWN) {
                     // si l'etage se situe entre current-next
                     if (between < this.currentStage && between > nextStage) {
-                        System.out.println("intermediate found: " + intermediateStage);
                         intermediateStage = between;
                         break;
                     }
                 }
                 if (intermediateStage != null) {
-                    System.out.println("changement next stage: " + nextStage);
                     nextStage = intermediateStage.intValue();
                 }
             }
-            System.out.println("Stage to reach " + nextStage);
 
             this.tract(nextStage);
         } else { // If cabineRequest.size == 0
@@ -146,11 +143,6 @@ public class ElevatorSystem extends Observable {
                     nextStage = this.currentStage == 0 ? this.maxStages: 0;
                 }
             }
-
-            System.out.println("Cabine : " + cabineRequest.toString());
-            System.out.println("Up : " + floorRequestUP.toString());
-            System.out.println("Down : " + floorRequestDOWN.toString());
-
             this.tract(nextStage);
         }
     }
@@ -184,14 +176,10 @@ public class ElevatorSystem extends Observable {
 
     public void tract(int newStage) {
         this.stageToReach = newStage;
-        System.out.println("------------------------");
-        System.out.println("\u001B[32m -Current stage: " + this.currentStage);
         System.out.println("\u001B[32m -Next stage to reach " + this.stageToReach + "\u001B[0m");
         if (this.currentStage < this.stageToReach) {
-            System.out.println("\u001B[32m -On monte" + "\u001B[0m");
             this.getUP();
         } else if (this.currentStage > this.stageToReach) {
-            System.out.println("\u001B[32m -On descend" + "\u001B[0m");
             this.getDOWN();
         }
     }
@@ -238,8 +226,10 @@ public class ElevatorSystem extends Observable {
         this.currentDirection = Elevator.Direction.TRACT_UP;
         System.out.println("Going up to floor : " + this.stageToReach);
 
+        this.elevator.go();
+        /*
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_UP);
-        elevator.start();
+        elevator.start();*/
     }
 
     /**
@@ -253,8 +243,10 @@ public class ElevatorSystem extends Observable {
 
         System.out.println("Going down to floor : " + this.stageToReach);
 
+        this.elevator.go();
+        /*
         this.elevator = new Elevator(this, Elevator.Direction.TRACT_DOWN);
-        elevator.start();
+        elevator.start();*/
     }
 
     /**
@@ -302,7 +294,10 @@ public class ElevatorSystem extends Observable {
             TimeUnit.SECONDS.sleep(3);
             door.close();
 
-            this.elevator.stopIt();
+            System.out.println("Attente 5s pour requête cabine des utilisateurs");
+            TimeUnit.SECONDS.sleep(5);
+
+
             // on l'enleve une fois achevé
             this.cabineRequest.remove(this.currentStage);
             this.floorRequestUP.remove(this.currentStage);
@@ -331,6 +326,10 @@ public class ElevatorSystem extends Observable {
 
     public int getCurrentStage() {
         return currentStage;
+    }
+
+    public Elevator.Direction getCurrentDirection() {
+        return currentDirection;
     }
 
     public static void main(String[] args) {
