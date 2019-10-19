@@ -3,12 +3,10 @@ package system;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import sun.reflect.generics.tree.Tree;
-import system.Elevator;
-
 public class ElevatorSystem extends Observable {
+
+    private boolean emergencyState = false;
+
     // temps par etage
     public static int frequencyMILLIS;
 
@@ -19,6 +17,7 @@ public class ElevatorSystem extends Observable {
     private int stageToReach;
 
     // nombre d'etages max
+    private int minStage;
     private int maxStages;
 
     // liste des etages montant et descendant, ainsi que les requetes cabine
@@ -122,7 +121,7 @@ public class ElevatorSystem extends Observable {
             /** CALCUL DE LA PLUS PROCHE REQUETE EXTERNE */
             if (!floorRequestDOWN.isEmpty() && !floorRequestUP.isEmpty()) { // Si il en existe une de chaque
                 int closestUp = this.getClosestStage("UP");
-                int closestDown = floorRequestUP.first() - this.getClosestStage("DOWN");
+                int closestDown = this.getClosestStage("DOWN");
 
                 if (Math.abs(currentStage - closestUp) < Math.abs(currentStage - closestDown)) {
                     nextStage = closestUp;
@@ -167,10 +166,23 @@ public class ElevatorSystem extends Observable {
     }
 
     public void waitToGo() {
-        while (floorRequestUP.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty()) {
-            continue;
+
+        boolean waiting = false;
+
+        while (floorRequestUP.isEmpty() && floorRequestDOWN.isEmpty() && cabineRequest.isEmpty() && !emergencyState) {
+            if (!waiting)
+            {
+                waiting = true;
+                setChanged();
+                notifyObservers(new Notification(Notification.Type.STILL, this.currentStage));
+            }
+            if(emergencyState) {
+                System.out.println("\u001B[31m" + "Emergency, can't move anymore" + "\u001B[0m");
+            }
         }
-        System.out.println("Choosing next floor to reach");
+        setChanged();
+        notifyObservers(new Notification(Notification.Type.MOVING, this.currentStage));
+        System.out.println(cabineRequest.toString());
         chooseNext();
     }
 
@@ -293,11 +305,7 @@ public class ElevatorSystem extends Observable {
             door.open();
             TimeUnit.SECONDS.sleep(3);
             door.close();
-
-            System.out.println("Attente 5s pour requête cabine des utilisateurs");
-            TimeUnit.SECONDS.sleep(5);
-
-
+            
             // on l'enleve une fois achevé
             this.cabineRequest.remove(this.currentStage);
             this.floorRequestUP.remove(this.currentStage);
@@ -305,6 +313,10 @@ public class ElevatorSystem extends Observable {
 
             setChanged();
             notifyObservers(new Notification(Notification.Type.STAGE_REACHED, this.currentStage));
+
+
+            System.out.println("Attente 5s pour requête cabine des utilisateurs");
+            TimeUnit.SECONDS.sleep(5);
 
             // on retourne à l'etat d'attente(diagramme etat systeme)
             this.waitToGo();
@@ -330,6 +342,37 @@ public class ElevatorSystem extends Observable {
 
     public Elevator.Direction getCurrentDirection() {
         return currentDirection;
+    }
+
+    public void enableEmergency()
+    {
+        elevator.stopToNext();
+        cabineRequest.clear();
+        floorRequestUP.clear();
+        floorRequestDOWN.clear();
+        emergencyState = true;
+        door.close();
+    }
+
+    public void disableEmergency()
+    {
+        emergencyState = false;
+        this.waitToGo();
+    }
+
+    public int getMaxStage()
+    {
+        return maxStages;
+    }
+
+    public int getMinStage()
+    {
+        return minStage;
+    }
+
+    public void stopElevator()
+    {
+        elevator.stopToNext();
     }
 
     public static void main(String[] args) {

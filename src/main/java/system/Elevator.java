@@ -7,7 +7,7 @@ public class Elevator extends Thread {
     private static int count = 0;
     private int number;
 
-    public enum Direction {TRACT_UP, TRACT_DOWN}
+    public enum Direction {TRACT_UP, TRACT_DOWN, STEADY}
 
     private boolean stop = false;
     private boolean stopToNext = false;

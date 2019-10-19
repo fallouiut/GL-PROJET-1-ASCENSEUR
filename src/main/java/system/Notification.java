@@ -1,7 +1,7 @@
 package system;
 
 public class Notification {
-    public enum Type {REQUEST_CABINE_TAKEN_BY_SYSTEM, REQUEST_FLOOR_TAKEN_BY_SYSTEM, STAGE_REACHED, STAGE_OVERPASSED}
+    public enum Type {REQUEST_CABINE_TAKEN_BY_SYSTEM, REQUEST_FLOOR_TAKEN_BY_SYSTEM, STAGE_REACHED, STAGE_OVERPASSED, MOVING, STILL}
 
     private Type type;
     private int stageConcerned;

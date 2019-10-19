@@ -71,10 +71,4 @@ public class CommandButtonView extends JFrame implements Observer {
         }
     }
 
-    /*
-    public static void main(String[] args) {
-        CommandButtonView view = new CommandButtonView(5);
-        view.setVisible(true);
-    }
-*/
 }

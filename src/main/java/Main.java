@@ -22,7 +22,7 @@ public class Main {
             ElevatorSliderView elevatorSlider = new ElevatorSliderView(STEPS, elevatorSystem, FIRST);
             CallsButtonView operativeView = new CallsButtonView(STEPS, elevatorSystem);
             CommandButtonView commandButtonView = new CommandButtonView(STEPS, elevatorSystem);
-            SystemsActionView systemsActionView = new SystemsActionView();
+            SystemsActionView systemsActionView = new SystemsActionView(elevatorSystem);
 
             /** -------- SHOW VIEWS AFTER STARTING SYSTEM --------------*/
             elevatorSlider.show();
